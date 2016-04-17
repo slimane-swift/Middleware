@@ -8,7 +8,7 @@ MiddleareType for Slimane
 struct AccessLogMiddleware: MiddlewareType {
     public func respond(req: Request, res: Response, next: MiddlewareChain) {
       print(req.uri.path ?? "/")
-      next(.Chain(res))
+      next(.Chain(req, res))
     }
 }
 ```
@@ -21,7 +21,7 @@ Middleware Chain Result Type that enable to control middleware chain cycle
 
 ```swift
 public enum MiddlewareChainResult {
-    case Chain(Response)
+    case Chain(Request, Response)
     case Error(ErrorProtocol)
 }
 ```
