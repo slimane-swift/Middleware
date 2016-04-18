@@ -40,6 +40,19 @@ extension Request {
             self.storage[storageKeyForResponse] = newValue
         }
     }
+
+    public var isIntercepted: Bool {
+        get {
+            guard let intercepted = storage[makeKey("intercepted")] as? Bool else {
+                return false
+            }
+            return intercepted
+        }
+
+        set {
+            storage[makeKey("intercepted")] = newValue
+        }
+    }
 }
 
 extension Response {
@@ -58,24 +71,11 @@ extension Response {
         let serialized = JSONSerializer().serializeToString(json)
         self.body = .buffer(serialized.data)
     }
-
-    public var isIntercepted: Bool {
-        get {
-            guard let intercepted = storage[makeKey("intercepted")] as? Bool else {
-                return false
-            }
-            return intercepted
-        }
-
-        set {
-            storage[makeKey("intercepted")] = newValue
-        }
-    }
 }
 
 extension MiddlewareType {
     public func respond(to request: Request, chainingTo next: AsyncResponder, result: (Void throws -> Response) -> Void) {
-        if request.response.isIntercepted {
+        if request.isIntercepted {
             result {
                 request.response
             }
@@ -91,10 +91,10 @@ extension MiddlewareType {
         }
 
         self.respond(request, res: request.response) {
-            if case .Chain(var request, var response) = $0 {
+            if case .Chain(var request, let response) = $0 {
                 if case .buffer(let data) = response.body {
                     if !data.isEmpty {
-                        response.isIntercepted = true
+                        request.isIntercepted = true
                     }
                 }
                 request.storage[storageKeyForResponse] = response
