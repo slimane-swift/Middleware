@@ -11,7 +11,7 @@
 @_exported import HTTP
 @_exported import JSON
 
-func makeKey(key: String) -> String {
+func makeKey(_ key: String) -> String {
     return "Slimane.Middleware\(key)"
 }
 
@@ -24,7 +24,7 @@ public typealias MiddlewareChain = MiddlewareChainResult -> ()
 public typealias MiddlewareHandlerType = (req: Request, res: Response, next: MiddlewareChain) -> ()
 
 public protocol MiddlewareType: AsyncMiddleware {
-    func respond(req: Request, res: Response, next: MiddlewareChain)
+    func respond(_ req: Request, res: Response, next: MiddlewareChain)
 }
 
 public let __SLIMANE_INTERNAL_STORAGE_KEY = "Slimane.Internal.RetainingValue."
@@ -56,19 +56,19 @@ extension Request {
 }
 
 extension Response {
-    public mutating func body(text text: String) {
+    public mutating func body(text: String) {
         headers["content-type"] = Header("text/plain")
         self.body = .buffer(Data(text))
     }
 
-    public mutating func body(html html: String) {
+    public mutating func body(html: String) {
         headers["content-type"] = Header("text/html")
         self.body = .buffer(Data(html))
     }
 
-    public mutating func body(json json: JSON) {
+    public mutating func body(json: JSON) {
         headers["content-type"] = Header("application/json")
-        let serialized = JSONSerializer().serializeToString(json)
+        let serialized = JSONSerializer().serializeToString(json: json)
         self.body = .buffer(serialized.data)
     }
 }
@@ -114,7 +114,7 @@ public struct BasicMiddleware: MiddlewareType {
         self.handler = handler
     }
 
-    public func respond(req: Request, res: Response, next: MiddlewareChain) {
+    public func respond(_ req: Request, res: Response, next: MiddlewareChain) {
         handler(req: req, res: res, next: next)
     }
 }
