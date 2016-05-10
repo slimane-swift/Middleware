@@ -20,7 +20,7 @@ public enum MiddlewareChainResult {
     case Error(ErrorProtocol)
 }
 
-public typealias MiddlewareChain = MiddlewareChainResult -> ()
+public typealias MiddlewareChain = (MiddlewareChainResult) -> ()
 public typealias MiddlewareHandlerType = (req: Request, res: Response, next: MiddlewareChain) -> ()
 
 public protocol MiddlewareType: AsyncMiddleware {
@@ -74,7 +74,7 @@ extension Response {
 }
 
 extension MiddlewareType {
-    public func respond(to request: Request, chainingTo next: AsyncResponder, result: (Void throws -> Response) -> Void) {
+    public func respond(to request: Request, chainingTo next: AsyncResponder, result: ((Void) throws -> Response) -> Void) {
         if request.isIntercepted {
             result {
                 request.response
