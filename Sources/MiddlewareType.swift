@@ -17,6 +17,7 @@ func makeKey(_ key: String) -> String {
 
 public enum MiddlewareChainResult {
     case Chain(Request, Response)
+    case Intercept(Request, Response)
     case Error(ErrorProtocol)
 }
 
@@ -92,11 +93,11 @@ extension MiddlewareType {
 
         self.respond(request, res: request.response) {
             if case .Chain(var request, let response) = $0 {
-                if case .buffer(let data) = response.body {
-                    if !data.isEmpty {
-                        request.isIntercepted = true
-                    }
-                }
+                request.storage[storageKeyForResponse] = response
+                nextChain(request)
+            }
+            else if case .Intercept(var request, let response) = $0 {
+                request.isIntercepted = true
                 request.storage[storageKeyForResponse] = response
                 nextChain(request)
             }
