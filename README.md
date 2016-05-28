@@ -22,11 +22,13 @@ Middleware Chain Result Type that enable to control middleware chain cycle
 ```swift
 public enum MiddlewareChainResult {
     case Chain(Request, Response)
+    case Intercept(Request, Response)
     case Error(ErrorProtocol)
 }
 ```
 
 * Chain: Go to next middleware chain with current request
+* Intercept: Intercept the middleware chain with current Request/Response content
 * Error: Intercept the middleware chain cycle and then respond error response
 
 
