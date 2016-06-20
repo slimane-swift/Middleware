@@ -16,9 +16,9 @@ func makeKey(_ key: String) -> String {
 }
 
 public enum MiddlewareChainResult {
-    case Chain(Request, Response)
-    case Intercept(Request, Response)
-    case Error(ErrorProtocol)
+    case chain(Request, Response)
+    case intercept(Request, Response)
+    case error(ErrorProtocol)
 }
 
 public typealias MiddlewareChain = (MiddlewareChainResult) -> ()
@@ -56,24 +56,6 @@ extension Request {
     }
 }
 
-extension Response {
-    public mutating func body(text: String) {
-        headers["content-type"] = Header("text/plain")
-        self.body = .buffer(Data(text))
-    }
-
-    public mutating func body(html: String) {
-        headers["content-type"] = Header("text/html")
-        self.body = .buffer(Data(html))
-    }
-
-    public mutating func body(json: JSON) {
-        headers["content-type"] = Header("application/json")
-        let serialized = JSONSerializer().serializeToString(json: json)
-        self.body = .buffer(serialized.data)
-    }
-}
-
 extension MiddlewareType {
     public func respond(to request: Request, chainingTo next: AsyncResponder, result: ((Void) throws -> Response) -> Void) {
         if request.isIntercepted {
@@ -92,17 +74,19 @@ extension MiddlewareType {
         }
 
         self.respond(request, res: request.response) {
-            if case .Chain(var request, let response) = $0 {
+            if case .chain(var request, let response) = $0 {
                 request.storage[storageKeyForResponse] = response
                 nextChain(request)
             }
-            else if case .Intercept(var request, let response) = $0 {
+            else if case .intercept(var request, let response) = $0 {
                 request.isIntercepted = true
                 request.storage[storageKeyForResponse] = response
                 nextChain(request)
             }
-            else if case .Error(let error) = $0 {
-                result { throw error }
+            else if case .error(let error) = $0 {
+                result {
+                    throw error
+                }
             }
         }
     }
